@@ -95,15 +95,51 @@ const ClientEditor = React.createClass({
     };
   },
 
+  errormessage(err) {
+    console.log(err.requestInfo.method);
+    if (err.requestInfo.method == 'resetAccessToken') {
+      if (auth.loadCredentials()) {
+        console.log('You do not have sufficient permission to reset access tokens for this user.');
+        return 'You do not have sufficient permission to reset access tokens for this user.';
+      } else {
+        console.log('You must be logged in and have permission to reset access tokens for this user.');
+        return 'You must be logged in and have permission to reset access tokens for this user.';
+      }
+    }        
+  },
   render() {
     // display errors from operations
     if (this.state.error) {
+      console.log('CLIENT Error');
+      console.log(this.state.clientError);
+      console.log('Error');
+      console.log(this.state.error);
+      console.log('Method');
+      //console.log(this.state.err.requestInfo);
+      console.log(this.state.error);
+      var msg = this.errormessage(this.state.error);
       return (
         <Alert bsStyle="danger" onDismiss={this.dismissError}>
-          <strong>Error executing operation</strong> {this.state.error.toString()}
+          <strong>Error executing operation</strong> 
+          <strong>{this.state.method}</strong> 
+          <p1>Error Code: {this.state.error.code}</p1>
+          <Button
+            bsStyle="info"
+            disabled={this.state.working}>
+            <Glyphicon glyph="info" /> Details
+          </Button>
+          <format.Markdown>{this.state.error.message}</format.Markdown>
         </Alert>
       );
     }
+    /**
+     * auth.loadCredentials() ?
+          'You do not have sufficient permission to reset access tokens for this user.' :
+          'You must be logged in and have permission to reset access tokens for this user.',
+          if(msg != null){
+            <p1>{msg}</p1>
+          }
+     */
     const isCreating = this.props.currentClientId === '' && this.state.accessToken === null;
     const isEditing = (isCreating || this.state.editing);
     let title = 'Create New Client';
@@ -186,7 +222,6 @@ const ClientEditor = React.createClass({
                       </div>
                     );
                   }
-
                   if (this.state.accessToken != null) {
                     return (
                       <Modal show={this.state.showModal} onHide={this.closeDialog}>
@@ -256,7 +291,6 @@ const ClientEditor = React.createClass({
               if (!this.state.client[prop]) {
                 return;
               }
-
               return (
                 <div className="form-group" key={prop}>
                   <label className="control-label col-md-3">{label}</label>
@@ -302,7 +336,6 @@ const ClientEditor = React.createClass({
                       this.renderCreatingToolbar() :
                       this.renderEditingToolbar();
                   }
-
                   return (
                     <ButtonToolbar>
                       <Button
@@ -455,9 +488,7 @@ const ClientEditor = React.createClass({
     } catch (err) {
       this.setState({
         working: false,
-        error: auth.loadCredentials() ?
-          'You do not have sufficient permission to reset access tokens for this user.' :
-          'You must be logged in and have permission to reset access tokens for this user.',
+        error: err,
       });
     }
   },
