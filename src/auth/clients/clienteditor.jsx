@@ -96,8 +96,8 @@ const ClientEditor = React.createClass({
   },
 
   errormessage(err) {
-    console.log(err.requestInfo.method);
-    if (err.requestInfo.method == 'resetAccessToken') {
+    console.log(err.body.requestInfo.method);
+    if (err.body.requestInfo.method == 'resetAccessToken') {
       if (auth.loadCredentials()) {
         console.log('You do not have sufficient permission to reset access tokens for this user.');
         return 'You do not have sufficient permission to reset access tokens for this user.';
@@ -105,7 +105,13 @@ const ClientEditor = React.createClass({
         console.log('You must be logged in and have permission to reset access tokens for this user.');
         return 'You must be logged in and have permission to reset access tokens for this user.';
       }
+    }else{
+        return undefined;
     }        
+  },
+
+  appendErrorDetail(msg) {
+    
   },
   render() {
     // display errors from operations
@@ -116,21 +122,32 @@ const ClientEditor = React.createClass({
       console.log(this.state.error);
       console.log('Method');
       //console.log(this.state.err.requestInfo);
-      console.log(this.state.error);
+      console.log(this.state.error.body);
       var msg = this.errormessage(this.state.error);
-      return (
-        <Alert bsStyle="danger" onDismiss={this.dismissError}>
+      if (msg) {
+        return (
+          <Alert bsStyle="danger" onDismiss={this.dismissError}>
           <strong>Error executing operation</strong> 
           <strong>{this.state.method}</strong> 
-          <p1>Error Code: {this.state.error.code}</p1>
+          <p>Error Code: {this.state.error.code}</p>
+          <p>Method: {this.state.error.body.requestInfo.method}</p>
+          <p>{msg}</p>
           <Button
             bsStyle="info"
             disabled={this.state.working}>
             <Glyphicon glyph="info" /> Details
-          </Button>
-          <format.Markdown>{this.state.error.message}</format.Markdown>
-        </Alert>
-      );
+           </Button>
+           <format.Markdown>{this.state.error.body.message}</format.Markdown>
+           </Alert>
+          );
+      } else {
+          return (
+            <Alert bsStyle="danger" onDismiss={this.dismissError}>
+            <strong>Error executing operation</strong> 
+            {this.state.error.toString()}
+            </Alert>
+        );
+      }
     }
     /**
      * auth.loadCredentials() ?
